@@ -1,0 +1,84 @@
+<html>
+	<head>
+		<title>Transept de la cathédrale d'Amiens</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+
+	<body>
+		<script src="../Libs/three.min.js"></script>
+		<script src="../Libs/OBJLoader.js"></script>
+
+		<script>
+			var container; 
+            
+			var camera, scene, renderer;
+            var dax=0.002;
+
+			function onWindowResize() {
+              camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+
+			function Init() {
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 2000 );
+                camera.rotation.z=0;
+                camera.rotation.x=0;
+                camera.rotation.y=0;
+                camera.position.z=0;
+
+				// scene
+				scene = new THREE.Scene();
+
+				var ambient = new THREE.AmbientLight( 0xffffff );
+				scene.add( ambient );
+
+				// texture
+
+				var manager = new THREE.LoadingManager();
+				manager.onProgress = function ( item, loaded, total ) {
+					console.log( item, loaded, total );
+				};
+
+				var texture = new THREE.Texture();
+
+				var loader = new THREE.ImageLoader( manager );
+				loader.load( '../TranseptSud/TranseptTexture4096.jpg', function ( image ) {
+					texture.image = image;
+					texture.needsUpdate = true;
+				} );
+
+				// Chargement du modèle
+				var loader = new THREE.OBJLoader( manager );
+				loader.load( '../TranseptSud/transeptSudBox.obj', function ( object ) {
+					object.traverse( function ( child ) {
+						if ( child instanceof THREE.Mesh ) {
+							child.material.map = texture;
+						}
+					} );
+					scene.add( object );
+				} );
+              renderer = new THREE.WebGLRenderer();
+              renderer.setSize( window.innerWidth, window.innerHeight );
+              container.appendChild( renderer.domElement );
+              window.addEventListener( 'resize', onWindowResize, false );
+			}
+			function Afficher() {
+                renderer.render(scene,camera);
+			}
+			function Animer() {
+				requestAnimationFrame(Animer);
+				Afficher();
+			}
+
+           Init();
+           Animer();
+
+		</script>
+
+	</body>
+</html>
