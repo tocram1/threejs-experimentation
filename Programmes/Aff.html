@@ -13,23 +13,27 @@
 			var container; 
             
 			var camera, scene, renderer;
-            var dax=0.002;
+			var dax=0.002;
+			
+			var keyboard = {};
+			var player = { speed: 0.05, turnSpeed: Math.PI*0.005 };
 
 			function onWindowResize() {
-              camera.aspect = window.innerWidth / window.innerHeight;
+              	camera.aspect = (window.innerWidth-20) / (window.innerHeight-20);
 				camera.updateProjectionMatrix();
-				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.setSize( (window.innerWidth-20), (window.innerHeight-20) );
 			}
 
 			function Init() {
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 90, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera = new THREE.PerspectiveCamera( 90, (window.innerWidth-20) / (window.innerHeight-20), 0.1, 2000 );
                 camera.rotation.z=0;
-                camera.rotation.x=0;
-                camera.rotation.y=0;
-                camera.position.z=0;
+                camera.rotation.x=Math.PI/2;
+                camera.rotation.y=Math.PI;
+				camera.position.z=-20.5;
+				camera.position.y=10;
 
 				// scene
 				scene = new THREE.Scene();
@@ -62,21 +66,82 @@
 					} );
 					scene.add( object );
 				} );
-              renderer = new THREE.WebGLRenderer();
-              renderer.setSize( window.innerWidth, window.innerHeight );
-              container.appendChild( renderer.domElement );
-              window.addEventListener( 'resize', onWindowResize, false );
+				renderer = new THREE.WebGLRenderer();
+				renderer.setSize( window.innerWidth-20, window.innerHeight-20 );
+				container.appendChild( renderer.domElement );
+				window.addEventListener( 'resize', onWindowResize, false );
 			}
 			function Afficher() {
                 renderer.render(scene,camera);
 			}
 			function Animer() {
 				requestAnimationFrame(Animer);
+
+				// Keyboard movement inputs
+				if(keyboard[87]){ // lettre Z (avancer)
+					camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
+					camera.position.y -= -Math.cos(camera.rotation.y) * player.speed;
+				}
+				if(keyboard[83]){ // lettre S (reculer)
+					camera.position.x += Math.sin(camera.rotation.y) * player.speed;
+					camera.position.y += -Math.cos(camera.rotation.y) * player.speed;
+				}
+				if(keyboard[65]){ // lettre Q (gauche)
+					// Redirect motion by 90 degrees
+					camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.speed;
+					camera.position.y += -Math.cos(camera.rotation.y - Math.PI/2) * player.speed;
+				}
+				if(keyboard[68]){ // lettre D (droite)
+					camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.speed;
+					camera.position.y += -Math.cos(camera.rotation.y + Math.PI/2) * player.speed;
+				}
+
+				// Tourner
+				if(keyboard[37]){ // flèche gauche
+					camera.rotation.y += player.turnSpeed;
+				}
+				if(keyboard[39]){ // flèche droite
+					camera.rotation.y -= player.turnSpeed;
+				}
+				if(keyboard[40]){ // flèche haut
+					camera.rotation.x += player.turnSpeed;
+				}
+				if(keyboard[38]){ // flèche bas
+					camera.rotation.x -= player.turnSpeed;
+				}
+
+				if(camera.rotation.x > Math.PI)
+					camera.rotation.x = Math.PI
+				else if(camera.rotation.x < 0)
+					camera.rotation.x = 0
+
+				// Collisions
+				if(camera.position.y > 11)
+					camera.position.y = 11
+				else if(camera.position.y < -11)
+					camera.position.y = -11
+
+				if(camera.position.x > 5.5)
+					camera.position.x = 5.5
+				else if(camera.position.x < -5.5)
+					camera.position.x = -5.5
+
 				Afficher();
 			}
 
-           Init();
-           Animer();
+			function keyDown(event){
+				keyboard[event.keyCode] = true;
+			}
+			
+			function keyUp(event){
+				keyboard[event.keyCode] = false;
+			}
+			
+			window.addEventListener('keydown', keyDown);
+			window.addEventListener('keyup', keyUp);
+
+           	Init();
+           	Animer();
 
 		</script>
 
