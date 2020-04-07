@@ -8,9 +8,10 @@
 	<body>
 		<script src="../Libs/three.min.js"></script>
 		<script src="../Libs/OBJLoader.js"></script>
+		<script src="https://threejs.org/examples/js/controls/PointerLockControls.js"></script>
 
 		<script>
-			var container; 
+			var container;
             
 			var camera, scene, renderer;
 			var dax=0.002;
@@ -24,22 +25,120 @@
 				renderer.setSize( (window.innerWidth-20), (window.innerHeight-20) );
 			}
 
+			function generateStructure( manager )
+            {
+                var texture = new THREE.Texture();
+
+                var loader = new THREE.ImageLoader( manager );
+                loader.load( '../TranseptSud/TranseptTexture4096.jpg', function ( image ) {
+                    texture.image = image;
+                    texture.needsUpdate = true;
+                    
+                } );
+
+                // Chargement du modèle
+                var loader = new THREE.OBJLoader( manager );     
+                loader.load( '../TranseptSud/transeptSudBox.obj', function ( object ) {
+                    object.traverse( function ( child ) {
+                        if ( child instanceof THREE.Mesh ) {
+                            child.material = new THREE.MeshPhongMaterial({map:texture});
+                            //child.material.map = texture;
+                        }
+                    } );
+                    object.name = "cathédrale";
+                    object.rotation.x=11;
+                    batiment = object;
+                    scene.add( object );
+                } );
+            }
+
 			function Init() {
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
+				havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
+
+		if ( havePointerLock ) {
+
+			element = document.body;
+
+			var pointerlockchange = function ( event ) {
+
+				if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
+					controls.enabled = true;
+				} else {
+					controls.enabled = false;
+				}
+
+			};
+
+			var pointerlockerror = function ( event ) {
+				console.log('Error loading Pointer Lock');
+			};
+
+			// Hook pointer lock state change events
+			document.addEventListener( 'pointerlockchange', pointerlockchange, false );
+			document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
+			document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
+
+			document.addEventListener( 'pointerlockerror', pointerlockerror, false );
+			document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
+			document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
+
+			element.addEventListener( 'click', function ( event ) {
+
+				// Ask the browser to lock the pointer
+				element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+
+				if ( /Firefox/i.test( navigator.userAgent ) ) {
+
+					var fullscreenchange = function ( event ) {
+
+						if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
+
+							document.removeEventListener( 'fullscreenchange', fullscreenchange );
+							document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
+
+							element.requestPointerLock();
+						}
+
+					};
+
+					document.addEventListener( 'fullscreenchange', fullscreenchange, false );
+					document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
+
+					element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
+
+					element.requestFullscreen();
+
+				} else {
+
+					element.requestPointerLock();
+
+				}
+
+			}, false );
+
+		} else {
+			console.error('Your browser doesn\'t support the pointer lock API');
+		}
+
 				camera = new THREE.PerspectiveCamera( 90, (window.innerWidth-20) / (window.innerHeight-20), 0.1, 2000 );
                 camera.rotation.z=0;
-                camera.rotation.x=Math.PI/2;
+                camera.rotation.x=0;
                 camera.rotation.y=Math.PI;
-				camera.position.z=-20.5;
-				camera.position.y=10;
+				camera.position.z=0;
+				camera.position.y=0;
 
 				// scene
 				scene = new THREE.Scene();
 
 				var ambient = new THREE.AmbientLight( 0xffffff );
 				scene.add( ambient );
+
+				controls = new THREE.PointerLockControls(camera);
+				controls.enabled = false;
+				scene.add(controls.getObject());
 
 				// texture
 
@@ -48,24 +147,8 @@
 					console.log( item, loaded, total );
 				};
 
-				var texture = new THREE.Texture();
+				generateStructure(manager);
 
-				var loader = new THREE.ImageLoader( manager );
-				loader.load( '../TranseptSud/TranseptTexture4096.jpg', function ( image ) {
-					texture.image = image;
-					texture.needsUpdate = true;
-				} );
-
-				// Chargement du modèle
-				var loader = new THREE.OBJLoader( manager );
-				loader.load( '../TranseptSud/transeptSudBox.obj', function ( object ) {
-					object.traverse( function ( child ) {
-						if ( child instanceof THREE.Mesh ) {
-							child.material.map = texture;
-						}
-					} );
-					scene.add( object );
-				} );
 				renderer = new THREE.WebGLRenderer();
 				renderer.setSize( window.innerWidth-20, window.innerHeight-20 );
 				container.appendChild( renderer.domElement );
@@ -78,48 +161,29 @@
 				requestAnimationFrame(Animer);
 
 				// Keyboard movement inputs
-				if(keyboard[87]){ // lettre Z (avancer)
-					camera.position.x -= Math.sin(camera.rotation.y) * player.speed;
-					camera.position.y -= -Math.cos(camera.rotation.y) * player.speed;
+				if(keyboard[87]){ // lettre W (avancer)
+					controls.getObject().translateZ(-player.speed)
 				}
 				if(keyboard[83]){ // lettre S (reculer)
-					camera.position.x += Math.sin(camera.rotation.y) * player.speed;
-					camera.position.y += -Math.cos(camera.rotation.y) * player.speed;
+					controls.getObject().translateZ(player.speed)
 				}
-				if(keyboard[65]){ // lettre Q (gauche)
-					// Redirect motion by 90 degrees
-					camera.position.x += Math.sin(camera.rotation.y - Math.PI/2) * player.speed;
-					camera.position.y += -Math.cos(camera.rotation.y - Math.PI/2) * player.speed;
+				if(keyboard[65]){ // lettre A (gauche)
+					controls.getObject().translateX(-player.speed)
 				}
 				if(keyboard[68]){ // lettre D (droite)
-					camera.position.x += Math.sin(camera.rotation.y + Math.PI/2) * player.speed;
-					camera.position.y += -Math.cos(camera.rotation.y + Math.PI/2) * player.speed;
+					controls.getObject().translateX(player.speed)
 				}
 
-				// Tourner
-				if(keyboard[37]){ // flèche gauche
-					camera.rotation.y += player.turnSpeed;
-				}
-				if(keyboard[39]){ // flèche droite
-					camera.rotation.y -= player.turnSpeed;
-				}
-				if(keyboard[40]){ // flèche haut
-					camera.rotation.x += player.turnSpeed;
-				}
-				if(keyboard[38]){ // flèche bas
-					camera.rotation.x -= player.turnSpeed;
-				}
+				console.log("x=" + camera.rotation.x + "\ny=" + camera.rotation.y + "\nz=" + camera.rotation.z)
 
-				if(camera.rotation.x > Math.PI)
-					camera.rotation.x = Math.PI
-				else if(camera.rotation.x < 0)
-					camera.rotation.x = 0
+				camera.position.y = -20.5;
+				
 
 				// Collisions
-				if(camera.position.y > 11)
-					camera.position.y = 11
-				else if(camera.position.y < -11)
-					camera.position.y = -11
+				if(camera.position.z > 11)
+					camera.position.z = 11
+				else if(camera.position.z < -11)
+					camera.position.z = -11
 
 				if(camera.position.x > 5.5)
 					camera.position.x = 5.5
