@@ -129,12 +129,27 @@
                 camera.rotation.y=Math.PI;
 				camera.position.z=0;
 				camera.position.y=0;
+				camera.position.y = -20.5;
 
 				// scene
 				scene = new THREE.Scene();
 
-				var ambient = new THREE.AmbientLight( 0xffffff );
-				scene.add( ambient );
+				//var ambient = new THREE.AmbientLight( 0xffffff );
+				//scene.add( ambient );
+
+				const light = new THREE.SpotLight(0xFFFFFF, 1);
+				light.angle = -Math.PI/4;
+				light.penumbra = 0.025;
+				light.position = camera.position;
+				light.rotation = camera.rotation;
+				light.target.position.x = 0;
+				light.target.position.y = -20.5;
+				light.target.position.z = 10;
+				camera.add(light);
+				scene.add(light.target);
+				console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
+				camera.position.z -= 1;
+				console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
 
 				controls = new THREE.PointerLockControls(camera);
 				controls.enabled = false;
@@ -174,10 +189,7 @@
 					controls.getObject().translateX(player.speed)
 				}
 
-				console.log("x=" + camera.rotation.x + "\ny=" + camera.rotation.y + "\nz=" + camera.rotation.z)
-
-				camera.position.y = -20.5;
-				
+				//console.log("x=" + camera.rotation.x + "\ny=" + camera.rotation.y + "\nz=" + camera.rotation.z)				
 
 				// Collisions
 				if(camera.position.z > 11)
@@ -189,6 +201,10 @@
 					camera.position.x = 5.5
 				else if(camera.position.x < -5.5)
 					camera.position.x = -5.5
+
+				camera.position.y = -20.5;
+
+				console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z);
 
 				Afficher();
 			}
