@@ -42,10 +42,11 @@
 				object.traverse(function (child) {
 					if (child instanceof THREE.Mesh) {
 						child.material = new THREE.MeshPhongMaterial({ map: texture });
-						//child.material.map = texture;
+						child.material.map = texture;
 					}
 				});
 				object.name = "cathédrale";
+				object.receiveShadow = true;
 				object.rotation.x = 11;
 				batiment = object;
 				scene.add(object);
@@ -123,6 +124,13 @@
 				console.error('Your browser doesn\'t support the pointer lock API');
 			}
 
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
+			renderer.shadowMap.enabled = true;
+			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			container.appendChild(renderer.domElement);
+			window.addEventListener('resize', onWindowResize, false);
+
 			camera = new THREE.PerspectiveCamera(90, (window.innerWidth - 20) / (window.innerHeight - 20), 0.1, 2000);
 			camera.rotation.z = 0;
 			camera.rotation.x = 0;
@@ -142,13 +150,20 @@
 			light.distance = 7;
 			light.penumbra = 0.2;
 			light.position = camera.position;
-			light.position.y -= 1
+			light.position.y -= 1.625;
+			light.position.x += 1;
 			light.rotation = camera.rotation;
 			light.target.position.x = 0;
-			light.target.position.y = -1;
+			light.target.position.y = -0.75;
 			light.target.position.z = -10;
+			light.castShadow = true;
+			light.shadow.mapSize.width = 1024;
+			light.shadow.mapSize.height = 1024;
+			light.shadow.camera.near = 0.1;
+			light.shadow.camera.far = 50;   
 			camera.add(light);
 			camera.add(light.target);
+
 			console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
 			camera.position.z -= 1;
 			console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
@@ -166,10 +181,20 @@
 
 			generateStructure(manager);
 
-			renderer = new THREE.WebGLRenderer();
-			renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
-			container.appendChild(renderer.domElement);
-			window.addEventListener('resize', onWindowResize, false);
+			// cubes
+			var coordCubes = [[4, 8], [-3, 6], [5, -10]];
+			coordCubes.forEach(function(coordCube) {
+				let geometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
+				let material = new THREE.MeshStandardMaterial()
+				material.color.set("#e0b000")
+				let cube = new THREE.Mesh(geometry, material);
+				cube.position.set(coordCube[0], -21.5, coordCube[1]);
+				cube.castShadow = true;
+				cube.receiveShadow = true;
+				console.log("cube placé !\nx=" + cube.position.x + "\ny=" + cube.position.y + "\nz=" + cube.position.z);
+				scene.add(cube);
+			});
+
 		}
 		function Afficher() {
 			renderer.render(scene, camera);
@@ -206,7 +231,7 @@
 
 			camera.position.y = -20.5;
 
-			// console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z);
+			console.log("caméra :\nx=" + camera.position.x + "\ny=" + camera.position.y + "\nz=" + camera.position.z);
 
 			Afficher();
 		}
