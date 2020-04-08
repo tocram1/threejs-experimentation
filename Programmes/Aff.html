@@ -1,229 +1,232 @@
 <html>
-	<head>
-		<title>Transept de la cathédrale d'Amiens</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	</head>
 
-	<body>
-		<script src="../Libs/three.min.js"></script>
-		<script src="../Libs/OBJLoader.js"></script>
-		<script src="https://threejs.org/examples/js/controls/PointerLockControls.js"></script>
+<head>
+	<title>Transept de la cathédrale d'Amiens</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+</head>
 
-		<script>
-			var container;
-            
-			var camera, scene, renderer;
-			var dax=0.002;
-			
-			var keyboard = {};
-			var player = { speed: 0.05, turnSpeed: Math.PI*0.005 };
+<body>
+	<script src="../Libs/three.min.js"></script>
+	<script src="../Libs/OBJLoader.js"></script>
+	<script src="https://threejs.org/examples/js/controls/PointerLockControls.js"></script>
 
-			function onWindowResize() {
-              	camera.aspect = (window.innerWidth-20) / (window.innerHeight-20);
-				camera.updateProjectionMatrix();
-				renderer.setSize( (window.innerWidth-20), (window.innerHeight-20) );
-			}
+	<script>
+		var container;
 
-			function generateStructure( manager )
-            {
-                var texture = new THREE.Texture();
+		var camera, scene, renderer;
+		var dax = 0.002;
 
-                var loader = new THREE.ImageLoader( manager );
-                loader.load( '../TranseptSud/TranseptTexture4096.jpg', function ( image ) {
-                    texture.image = image;
-                    texture.needsUpdate = true;
-                    
-                } );
+		var keyboard = {};
+		var player = { speed: 0.05, turnSpeed: Math.PI * 0.005 };
 
-                // Chargement du modèle
-                var loader = new THREE.OBJLoader( manager );     
-                loader.load( '../TranseptSud/transeptSudBox.obj', function ( object ) {
-                    object.traverse( function ( child ) {
-                        if ( child instanceof THREE.Mesh ) {
-                            child.material = new THREE.MeshPhongMaterial({map:texture});
-                            //child.material.map = texture;
-                        }
-                    } );
-                    object.name = "cathédrale";
-                    object.rotation.x=11;
-                    batiment = object;
-                    scene.add( object );
-                } );
-            }
-
-			function Init() {
-				container = document.createElement( 'div' );
-				document.body.appendChild( container );
-
-				havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
-
-		if ( havePointerLock ) {
-
-			element = document.body;
-
-			var pointerlockchange = function ( event ) {
-
-				if ( document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element ) {
-					controls.enabled = true;
-				} else {
-					controls.enabled = false;
-				}
-
-			};
-
-			var pointerlockerror = function ( event ) {
-				console.log('Error loading Pointer Lock');
-			};
-
-			// Hook pointer lock state change events
-			document.addEventListener( 'pointerlockchange', pointerlockchange, false );
-			document.addEventListener( 'mozpointerlockchange', pointerlockchange, false );
-			document.addEventListener( 'webkitpointerlockchange', pointerlockchange, false );
-
-			document.addEventListener( 'pointerlockerror', pointerlockerror, false );
-			document.addEventListener( 'mozpointerlockerror', pointerlockerror, false );
-			document.addEventListener( 'webkitpointerlockerror', pointerlockerror, false );
-
-			element.addEventListener( 'click', function ( event ) {
-
-				// Ask the browser to lock the pointer
-				element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
-
-				if ( /Firefox/i.test( navigator.userAgent ) ) {
-
-					var fullscreenchange = function ( event ) {
-
-						if ( document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element ) {
-
-							document.removeEventListener( 'fullscreenchange', fullscreenchange );
-							document.removeEventListener( 'mozfullscreenchange', fullscreenchange );
-
-							element.requestPointerLock();
-						}
-
-					};
-
-					document.addEventListener( 'fullscreenchange', fullscreenchange, false );
-					document.addEventListener( 'mozfullscreenchange', fullscreenchange, false );
-
-					element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
-
-					element.requestFullscreen();
-
-				} else {
-
-					element.requestPointerLock();
-
-				}
-
-			}, false );
-
-		} else {
-			console.error('Your browser doesn\'t support the pointer lock API');
+		function onWindowResize() {
+			camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
+			camera.updateProjectionMatrix();
+			renderer.setSize((window.innerWidth - 20), (window.innerHeight - 20));
 		}
 
-				camera = new THREE.PerspectiveCamera( 90, (window.innerWidth-20) / (window.innerHeight-20), 0.1, 2000 );
-                camera.rotation.z=0;
-                camera.rotation.x=0;
-                camera.rotation.y=Math.PI;
-				camera.position.z=0;
-				camera.position.y=0;
-				camera.position.y = -20.5;
+		function generateStructure(manager) {
+			var texture = new THREE.Texture();
 
-				// scene
-				scene = new THREE.Scene();
+			var loader = new THREE.ImageLoader(manager);
+			loader.load('../TranseptSud/TranseptTexture4096.jpg', function (image) {
+				texture.image = image;
+				texture.needsUpdate = true;
 
-				//var ambient = new THREE.AmbientLight( 0xffffff );
-				//scene.add( ambient );
+			});
 
-				const light = new THREE.SpotLight(0xFFFFFF, 1);
-				light.angle = -Math.PI/4;
-				light.penumbra = 0.025;
-				light.position = camera.position;
-				light.rotation = camera.rotation;
-				light.target.position.x = 0;
-				light.target.position.y = -20.5;
-				light.target.position.z = 10;
-				camera.add(light);
-				scene.add(light.target);
-				console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
-				camera.position.z -= 1;
-				console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
+			// Chargement du modèle
+			var loader = new THREE.OBJLoader(manager);
+			loader.load('../TranseptSud/transeptSudBox.obj', function (object) {
+				object.traverse(function (child) {
+					if (child instanceof THREE.Mesh) {
+						child.material = new THREE.MeshPhongMaterial({ map: texture });
+						//child.material.map = texture;
+					}
+				});
+				object.name = "cathédrale";
+				object.rotation.x = 11;
+				batiment = object;
+				scene.add(object);
+			});
+		}
 
-				controls = new THREE.PointerLockControls(camera);
-				controls.enabled = false;
-				scene.add(controls.getObject());
+		function Init() {
+			container = document.createElement('div');
+			document.body.appendChild(container);
 
-				// texture
+			havePointerLock = 'pointerLockElement' in document || 'mozPointerLockElement' in document || 'webkitPointerLockElement' in document;
 
-				var manager = new THREE.LoadingManager();
-				manager.onProgress = function ( item, loaded, total ) {
-					console.log( item, loaded, total );
+			if (havePointerLock) {
+
+				element = document.body;
+
+				var pointerlockchange = function (event) {
+
+					if (document.pointerLockElement === element || document.mozPointerLockElement === element || document.webkitPointerLockElement === element) {
+						controls.enabled = true;
+					} else {
+						controls.enabled = false;
+					}
+
 				};
 
-				generateStructure(manager);
+				var pointerlockerror = function (event) {
+					console.log('Error loading Pointer Lock');
+				};
 
-				renderer = new THREE.WebGLRenderer();
-				renderer.setSize( window.innerWidth-20, window.innerHeight-20 );
-				container.appendChild( renderer.domElement );
-				window.addEventListener( 'resize', onWindowResize, false );
+				// Hook pointer lock state change events
+				document.addEventListener('pointerlockchange', pointerlockchange, false);
+				document.addEventListener('mozpointerlockchange', pointerlockchange, false);
+				document.addEventListener('webkitpointerlockchange', pointerlockchange, false);
+
+				document.addEventListener('pointerlockerror', pointerlockerror, false);
+				document.addEventListener('mozpointerlockerror', pointerlockerror, false);
+				document.addEventListener('webkitpointerlockerror', pointerlockerror, false);
+
+				element.addEventListener('click', function (event) {
+
+					// Ask the browser to lock the pointer
+					element.requestPointerLock = element.requestPointerLock || element.mozRequestPointerLock || element.webkitRequestPointerLock;
+
+					if (/Firefox/i.test(navigator.userAgent)) {
+
+						var fullscreenchange = function (event) {
+
+							if (document.fullscreenElement === element || document.mozFullscreenElement === element || document.mozFullScreenElement === element) {
+
+								document.removeEventListener('fullscreenchange', fullscreenchange);
+								document.removeEventListener('mozfullscreenchange', fullscreenchange);
+
+								element.requestPointerLock();
+							}
+
+						};
+
+						document.addEventListener('fullscreenchange', fullscreenchange, false);
+						document.addEventListener('mozfullscreenchange', fullscreenchange, false);
+
+						element.requestFullscreen = element.requestFullscreen || element.mozRequestFullscreen || element.mozRequestFullScreen || element.webkitRequestFullscreen;
+
+						element.requestFullscreen();
+
+					} else {
+
+						element.requestPointerLock();
+
+					}
+
+				}, false);
+
+			} else {
+				console.error('Your browser doesn\'t support the pointer lock API');
 			}
-			function Afficher() {
-                renderer.render(scene,camera);
+
+			camera = new THREE.PerspectiveCamera(90, (window.innerWidth - 20) / (window.innerHeight - 20), 0.1, 2000);
+			camera.rotation.z = 0;
+			camera.rotation.x = 0;
+			camera.rotation.y = Math.PI;
+			camera.position.z = 0;
+			camera.position.y = 0;
+			camera.position.y = -20.5;
+
+			// scene
+			scene = new THREE.Scene();
+
+			var ambient = new THREE.AmbientLight(0xffffff, 0.04);
+			scene.add( ambient );
+
+			const light = new THREE.SpotLight(0xFFFFFF, 1);
+			light.angle = -Math.PI / 4;
+			light.distance = 7;
+			light.penumbra = 0.2;
+			light.position = camera.position;
+			light.position.y -= 1
+			light.rotation = camera.rotation;
+			light.target.position.x = 0;
+			light.target.position.y = -1;
+			light.target.position.z = -10;
+			camera.add(light);
+			camera.add(light.target);
+			console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
+			camera.position.z -= 1;
+			console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
+
+			controls = new THREE.PointerLockControls(camera);
+			controls.enabled = false;
+			scene.add(controls.getObject());
+
+			// texture
+
+			var manager = new THREE.LoadingManager();
+			manager.onProgress = function (item, loaded, total) {
+				console.log(item, loaded, total);
+			};
+
+			generateStructure(manager);
+
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
+			container.appendChild(renderer.domElement);
+			window.addEventListener('resize', onWindowResize, false);
+		}
+		function Afficher() {
+			renderer.render(scene, camera);
+		}
+		function Animer() {
+			requestAnimationFrame(Animer);
+
+			// Keyboard movement inputs
+			if (keyboard[87]) { // lettre W (avancer)
+				controls.getObject().translateZ(-player.speed)
 			}
-			function Animer() {
-				requestAnimationFrame(Animer);
-
-				// Keyboard movement inputs
-				if(keyboard[87]){ // lettre W (avancer)
-					controls.getObject().translateZ(-player.speed)
-				}
-				if(keyboard[83]){ // lettre S (reculer)
-					controls.getObject().translateZ(player.speed)
-				}
-				if(keyboard[65]){ // lettre A (gauche)
-					controls.getObject().translateX(-player.speed)
-				}
-				if(keyboard[68]){ // lettre D (droite)
-					controls.getObject().translateX(player.speed)
-				}
-
-				//console.log("x=" + camera.rotation.x + "\ny=" + camera.rotation.y + "\nz=" + camera.rotation.z)				
-
-				// Collisions
-				if(camera.position.z > 11)
-					camera.position.z = 11
-				else if(camera.position.z < -11)
-					camera.position.z = -11
-
-				if(camera.position.x > 5.5)
-					camera.position.x = 5.5
-				else if(camera.position.x < -5.5)
-					camera.position.x = -5.5
-
-				camera.position.y = -20.5;
-
-				console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z);
-
-				Afficher();
+			if (keyboard[83]) { // lettre S (reculer)
+				controls.getObject().translateZ(player.speed)
+			}
+			if (keyboard[65]) { // lettre A (gauche)
+				controls.getObject().translateX(-player.speed)
+			}
+			if (keyboard[68]) { // lettre D (droite)
+				controls.getObject().translateX(player.speed)
 			}
 
-			function keyDown(event){
-				keyboard[event.keyCode] = true;
-			}
-			
-			function keyUp(event){
-				keyboard[event.keyCode] = false;
-			}
-			
-			window.addEventListener('keydown', keyDown);
-			window.addEventListener('keyup', keyUp);
+			// console.log("x=" + camera.rotation.x + "\ny=" + camera.rotation.y + "\nz=" + camera.rotation.z)				
 
-           	Init();
-           	Animer();
+			// Collisions
+			if (camera.position.z > 11)
+				camera.position.z = 11
+			else if (camera.position.z < -11)
+				camera.position.z = -11
 
-		</script>
+			if (camera.position.x > 5.5)
+				camera.position.x = 5.5
+			else if (camera.position.x < -5.5)
+				camera.position.x = -5.5
 
-	</body>
+			camera.position.y = -20.5;
+
+			// console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z);
+
+			Afficher();
+		}
+
+		function keyDown(event) {
+			keyboard[event.keyCode] = true;
+		}
+
+		function keyUp(event) {
+			keyboard[event.keyCode] = false;
+		}
+
+		window.addEventListener('keydown', keyDown);
+		window.addEventListener('keyup', keyUp);
+
+		Init();
+		Animer();
+
+	</script>
+
+</body>
+
 </html>
