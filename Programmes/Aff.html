@@ -22,11 +22,12 @@
 
 		var coordCubes = [[4, 8], [-3, 6], [5, -10]];
 		var coordCubesOriginal = Array();
+		var nbCubes = 0;
 
 		function onWindowResize() {
-			camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
+			camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 50);
 			camera.updateProjectionMatrix();
-			renderer.setSize((window.innerWidth - 20), (window.innerHeight - 20));
+			renderer.setSize((window.innerWidth - 20), (window.innerHeight - 50));
 		}
 
 		function generateStructure(manager) {
@@ -128,13 +129,13 @@
 			}
 
 			renderer = new THREE.WebGLRenderer();
-			renderer.setSize(window.innerWidth - 20, window.innerHeight - 20);
+			renderer.setSize(window.innerWidth - 20, window.innerHeight - 50);
 			renderer.shadowMap.enabled = true;
 			renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 			container.appendChild(renderer.domElement);
 			window.addEventListener('resize', onWindowResize, false);
 
-			camera = new THREE.PerspectiveCamera(90, (window.innerWidth - 20) / (window.innerHeight - 20), 0.1, 2000);
+			camera = new THREE.PerspectiveCamera(90, (window.innerWidth - 20) / (window.innerHeight - 50), 0.1, 2000);
 			camera.rotation.z = 0;
 			camera.rotation.x = 0;
 			camera.rotation.y = Math.PI;
@@ -207,13 +208,13 @@
 			requestAnimationFrame(Animer);
 
 			// Keyboard movement inputs
-			if (keyboard[87]) { // lettre W (avancer)
+			if (keyboard[90]) { // lettre Z (avancer)
 				controls.getObject().translateZ(-player.speed)
 			}
 			if (keyboard[83]) { // lettre S (reculer)
 				controls.getObject().translateZ(player.speed)
 			}
-			if (keyboard[65]) { // lettre A (gauche)
+			if (keyboard[81]) { // lettre Q (gauche)
 				controls.getObject().translateX(-player.speed)
 			}
 			if (keyboard[68]) { // lettre D (droite)
@@ -239,9 +240,15 @@
 						console.log("GET CUBED " + coordCube)
 						let index = coordCubes.indexOf(coordCube);
 						if (index > -1) {
+							// collision avec un cube
 							coordCubes.splice(index, 1);
 							index = coordCubesOriginal.indexOf(coordCube);
 							scene.remove(scene.getObjectByName("cube" + index));
+							nbCubes++;
+							if (3-nbCubes > 0)
+								document.getElementById("score").innerHTML = "Cube found ! " + (3-nbCubes) + " remaining";
+							else
+								document.getElementById("score").innerHTML = "You won !";
 						}
 					}
 				}
@@ -265,7 +272,7 @@
 		Animer();
 
 	</script>
-
+	<p id="score" style="margin: 0.25em; font-weight: bold;">0 golden cubes found, 3 remaining...</p>
 </body>
 
 </html>
