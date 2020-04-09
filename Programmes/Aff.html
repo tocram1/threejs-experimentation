@@ -20,6 +20,9 @@
 		var keyboard = {};
 		var player = { speed: 0.05, turnSpeed: Math.PI * 0.005 };
 
+		var coordCubes = [[4, 8], [-3, 6], [5, -10]];
+		var coordCubesOriginal = Array();
+
 		function onWindowResize() {
 			camera.aspect = (window.innerWidth - 20) / (window.innerHeight - 20);
 			camera.updateProjectionMatrix();
@@ -145,9 +148,9 @@
 			var ambient = new THREE.AmbientLight(0xffffff, 0.04);
 			scene.add( ambient );
 
-			const light = new THREE.SpotLight(0xFFFFFF, 1);
+			const light = new THREE.SpotLight(0xFFFFFF, 1.5);
 			light.angle = -Math.PI / 4;
-			light.distance = 7;
+			light.distance = 8;
 			light.penumbra = 0.2;
 			light.position = camera.position;
 			light.position.y -= 1.625;
@@ -163,10 +166,7 @@
 			light.shadow.camera.far = 50;   
 			camera.add(light);
 			camera.add(light.target);
-
-			console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
 			camera.position.z -= 1;
-			console.log("camera :\n" + camera.position.x + " " + camera.position.y + " " + camera.position.z + "\nlight :\n" + light.position.x + " " + light.position.y + " " + light.position.z + "\ntarget :\n" + light.target.position.x + " " + light.target.position.y + " " + light.target.position.z);
 
 			controls = new THREE.PointerLockControls(camera);
 			controls.enabled = false;
@@ -182,8 +182,9 @@
 			generateStructure(manager);
 
 			// cubes
-			var coordCubes = [[4, 8], [-3, 6], [5, -10]];
+			let indexCubeCreate = 0
 			coordCubes.forEach(function(coordCube) {
+				coordCubesOriginal.push(coordCube)
 				let geometry = new THREE.BoxGeometry(0.4, 0.4, 0.4);
 				let material = new THREE.MeshStandardMaterial()
 				material.color.set("#e0b000")
@@ -191,6 +192,9 @@
 				cube.position.set(coordCube[0], -21.5, coordCube[1]);
 				cube.castShadow = true;
 				cube.receiveShadow = true;
+				cube.name = "cube" + indexCubeCreate;
+				console.log(cube.name);
+				indexCubeCreate++;
 				console.log("cube placé !\nx=" + cube.position.x + "\ny=" + cube.position.y + "\nz=" + cube.position.z);
 				scene.add(cube);
 			});
@@ -214,9 +218,7 @@
 			}
 			if (keyboard[68]) { // lettre D (droite)
 				controls.getObject().translateX(player.speed)
-			}
-
-			// console.log("x=" + camera.rotation.x + "\ny=" + camera.rotation.y + "\nz=" + camera.rotation.z)				
+			}			
 
 			// Collisions
 			if (camera.position.z > 11)
@@ -231,7 +233,19 @@
 
 			camera.position.y = -20.5;
 
-			console.log("caméra :\nx=" + camera.position.x + "\ny=" + camera.position.y + "\nz=" + camera.position.z);
+			coordCubes.forEach(function(coordCube) {
+				if (camera.position.x > (coordCube[0]-0.5) && camera.position.x < (coordCube[0]+0.5)) {
+					if (camera.position.z > (coordCube[1]-0.5) && camera.position.z < (coordCube[1]+0.5)) {
+						console.log("GET CUBED " + coordCube)
+						let index = coordCubes.indexOf(coordCube);
+						if (index > -1) {
+							coordCubes.splice(index, 1);
+							index = coordCubesOriginal.indexOf(coordCube);
+							scene.remove(scene.getObjectByName("cube" + index));
+						}
+					}
+				}
+			});
 
 			Afficher();
 		}
