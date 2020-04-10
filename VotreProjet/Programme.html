@@ -7,8 +7,8 @@
 </head>
 
 <body>
-	<script src="../Libs/three.min.js"></script>
-	<script src="../Libs/OBJLoader.js"></script>
+	<script src="Libs/three.min.js"></script>
+	<script src="Libs/OBJLoader.js"></script>
 	<script src="https://threejs.org/examples/js/controls/PointerLockControls.js"></script>
 
 	<script>
@@ -207,16 +207,16 @@
 			requestAnimationFrame(Animer);
 
 			// Keyboard movement inputs
-			if (keyboard[90]) { // lettre Z (avancer)
+			if (keyboard[38]) { // avancer
 				controls.getObject().translateZ(-player.speed)
 			}
-			if (keyboard[83]) { // lettre S (reculer)
+			if (keyboard[40]) { // reculer
 				controls.getObject().translateZ(player.speed)
 			}
-			if (keyboard[81]) { // lettre Q (gauche)
+			if (keyboard[37]) { // gauche
 				controls.getObject().translateX(-player.speed)
 			}
-			if (keyboard[68]) { // lettre D (droite)
+			if (keyboard[39]) { // droite
 				controls.getObject().translateX(player.speed)
 			}			
 
